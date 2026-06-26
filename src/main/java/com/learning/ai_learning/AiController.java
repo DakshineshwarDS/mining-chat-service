@@ -10,13 +10,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
+import java.util.List;
+
 @RestController
 public class AiController {
 
     private static final Logger log = LoggerFactory.getLogger(AiController.class);
     private final ChatClient chatClient;
+    private final VectorService vectorService;
 
-    public AiController(ChatClient.Builder chatClient) {
+    public AiController(ChatClient.Builder chatClient, VectorService vectorService) {
+        this.vectorService =vectorService;
         this.chatClient = chatClient
                 .defaultSystem("""
                        You are an expert assistant for Cat MineStar Fleet Management System.
@@ -85,5 +89,19 @@ public class AiController {
 
         log.info("Passed result: {}", result);
         return result;
+    }
+
+    @GetMapping("/vector/store")
+    public String getTheStore() {
+        vectorService.storeEquipmentIssues();
+        return "6 Equipment vector issues are stored in pgvector Successfully! ";
+    }
+
+    @GetMapping("/vector/search")
+    public List<SearchResult> searchTheQuery(@RequestParam String query) {
+
+        log.info("Vector search request: {}", query);
+
+        return vectorService.searchSimilarIssues(query, 2);
     }
 }
