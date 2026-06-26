@@ -1,0 +1,89 @@
+package com.learning.ai_learning;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.converter.BeanOutputConverter;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
+
+@RestController
+public class AiController {
+
+    private static final Logger log = LoggerFactory.getLogger(AiController.class);
+    private final ChatClient chatClient;
+
+    public AiController(ChatClient.Builder chatClient) {
+        this.chatClient = chatClient
+                .defaultSystem("""
+                       You are an expert assistant for Cat MineStar Fleet Management System.
+                       You help mine operators, fleet supervisors, and site managers
+                       understand equipment performance, fault codes, and KPI reports.
+                       Answer concisely and professionally.
+                       If a question is not related to mining operations or fleet management,
+                       politely say it is outside your area of expertise. 
+                       """)
+                .build();
+    }
+
+    @GetMapping("/ask")
+    public String ask(@RequestParam String questions) {
+        log.info("Question Received: {}", questions);
+
+        String res = chatClient.prompt()
+                .user(questions)
+                .call()
+                .content();
+
+        log.info("AI Response: {}", res);
+
+        return res;
+    }
+
+    @GetMapping(value = "/ask/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> askStream(@RequestParam String question) {
+        log.info("Streaming question: {}", question);
+
+        return chatClient.prompt()
+                .user(question)
+                .stream().content()
+                .doOnNext(System.out::println)
+                .doOnComplete(() -> System.out.println("\n--- Stream Complete ---"));
+    }
+
+
+    @GetMapping("/analyse")
+    public TruckAnalysis analysis(@RequestParam String truckId,
+                                  @RequestParam String problem) {
+
+        log.info("Analyze Request - Truck: {}, Problem:{}", truckId, problem);
+
+        BeanOutputConverter<TruckAnalysis> converter = new BeanOutputConverter<>(TruckAnalysis.class);
+
+        String res = chatClient.prompt()
+                .user(u->u.text("""
+                        Analyse the following mining truck issue and respond\s
+                        in the exact JSON format specified below.
+                        
+                        Truck ID: {truckId}
+                        Problem: {problem}
+                        
+                        {format}
+                        """)
+                        .param("truckId", truckId)
+                        .param("problem", problem)
+                        .param("format", converter.getFormat()))
+                .call()
+                .content();
+
+        log.info("RAW AI response: {}", res);
+
+        TruckAnalysis result = converter.convert(res);
+
+        log.info("Passed result: {}", result);
+        return result;
+    }
+}
