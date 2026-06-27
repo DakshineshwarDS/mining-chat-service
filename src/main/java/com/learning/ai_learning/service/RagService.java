@@ -1,5 +1,6 @@
-package com.learning.ai_learning;
+package com.learning.ai_learning.service;
 
+import com.learning.ai_learning.model.RagResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;

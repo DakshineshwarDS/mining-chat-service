@@ -1,5 +1,13 @@
-package com.learning.ai_learning;
+package com.learning.ai_learning.controller;
 
+import com.learning.ai_learning.model.AssistantResponse;
+import com.learning.ai_learning.model.RagResponse;
+import com.learning.ai_learning.model.SearchResult;
+import com.learning.ai_learning.model.TruckAnalysis;
+import com.learning.ai_learning.service.FleetAssistantService;
+import com.learning.ai_learning.service.MineStarAssistantService;
+import com.learning.ai_learning.service.RagService;
+import com.learning.ai_learning.service.VectorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;

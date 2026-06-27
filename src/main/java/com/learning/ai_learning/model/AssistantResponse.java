@@ -1,4 +1,4 @@
-package com.learning.ai_learning;
+package com.learning.ai_learning.model;
 
 
 import java.util.List;

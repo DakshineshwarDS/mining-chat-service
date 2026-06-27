@@ -1,5 +1,7 @@
-package com.learning.ai_learning;
+package com.learning.ai_learning.service;
 
+import com.learning.ai_learning.model.AssistantResponse;
+import com.learning.ai_learning.tools.TruckDataService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.ai.chat.client.ChatClient;
