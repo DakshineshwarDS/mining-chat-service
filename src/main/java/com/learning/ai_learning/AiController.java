@@ -18,9 +18,11 @@ public class AiController {
     private static final Logger log = LoggerFactory.getLogger(AiController.class);
     private final ChatClient chatClient;
     private final VectorService vectorService;
+    private final RagService ragService;
 
-    public AiController(ChatClient.Builder chatClient, VectorService vectorService) {
+    public AiController(ChatClient.Builder chatClient, VectorService vectorService, RagService ragService) {
         this.vectorService =vectorService;
+        this.ragService = ragService;
         this.chatClient = chatClient
                 .defaultSystem("""
                        You are an expert assistant for Cat MineStar Fleet Management System.
@@ -103,5 +105,12 @@ public class AiController {
         log.info("Vector search request: {}", query);
 
         return vectorService.searchSimilarIssues(query, 2);
+    }
+
+    // RAG endpoint — answers from your own MineStar equipment database
+    @GetMapping("/rag/ask")
+    public RagResponse askRagQuestion(@RequestParam String question) {
+        log.info("RAG endpoint called: {}", question);
+        return ragService.ask(question);
     }
 }
