@@ -20,12 +20,15 @@ public class AiController {
     private final VectorService vectorService;
     private final RagService ragService;
     private final FleetAssistantService fleetAssistantService;
+    private final MineStarAssistantService mineStarAssistantService;
 
     public AiController(ChatClient.Builder chatClient, VectorService vectorService,
-                        RagService ragService, FleetAssistantService fleetAssistantService) {
+                        RagService ragService, FleetAssistantService fleetAssistantService,
+                        MineStarAssistantService mineStarAssistantService) {
         this.vectorService =vectorService;
         this.ragService = ragService;
         this.fleetAssistantService = fleetAssistantService;
+        this.mineStarAssistantService =mineStarAssistantService;
         this.chatClient = chatClient
                 .defaultSystem("""
                        You are an expert assistant for Cat MineStar Fleet Management System.
@@ -123,5 +126,11 @@ public class AiController {
         return fleetAssistantService.chat(message);
     }
 
+    // Capstone endpoint — unified MineStar AI Assistant
+    @GetMapping("/assistant/chat")
+    public AssistantResponse assistantChat(@RequestParam String question) {
+        log.info("Assistant chat: {}", question);
+        return mineStarAssistantService.chat(question);
+    }
 
 }
