@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MineStar AI Assistant</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0a0f1e;
+            color: #e2e8f0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1a2744 0%, #0f1729 100%);
+            border-bottom: 2px solid #FFCD11;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .cat-badge {
+            background: #FFCD11;
+            color: #000;
+            font-weight: 900;
+            font-size: 14px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            letter-spacing: 1px;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .header-sub {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            margin-left: auto;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .status-text {
+            font-size: 11px;
+            color: #22c55e;
+            margin-left: 6px;
+        }
+
+        /* Chat area */
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Welcome message */
+        .welcome {
+            text-align: center;
+            padding: 40px 20px;
+            color: #64748b;
+        }
+
+        .welcome h2 {
+            font-size: 20px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .welcome p { font-size: 13px; margin-bottom: 20px; }
+
+        .quick-btns {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .quick-btn {
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #94a3b8;
+            padding: 8px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .quick-btn:hover {
+            border-color: #FFCD11;
+            color: #FFCD11;
+            background: #1a2744;
+        }
+
+        /* Messages */
+        .message {
+            display: flex;
+            gap: 12px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user { flex-direction: row-reverse; }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .avatar.ai {
+            background: linear-gradient(135deg, #FFCD11, #f59e0b);
+            color: #000;
+        }
+
+        .avatar.user-av {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: #fff;
+        }
+
+        .bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .message.ai .bubble {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-top-left-radius: 4px;
+        }
+
+        .message.user .bubble {
+            background: linear-gradient(135deg, #1d4ed8, #1e40af);
+            border-top-right-radius: 4px;
+            color: #fff;
+        }
+
+        /* Sources */
+        .sources {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #334155;
+        }
+
+        .sources-label {
+            font-size: 10px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 6px;
+        }
+
+        .source-tag {
+            display: inline-block;
+            background: #0f172a;
+            border: 1px solid #FFCD11;
+            color: #FFCD11;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin: 2px;
+        }
+
+        /* Typing indicator */
+        .typing {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            border-top-left-radius: 4px;
+            width: fit-content;
+        }
+
+        .typing span {
+            width: 6px;
+            height: 6px;
+            background: #FFCD11;
+            border-radius: 50%;
+            animation: bounce 1.2s infinite;
+        }
+
+        .typing span:nth-child(2) { animation-delay: 0.2s; }
+        .typing span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes bounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-6px); }
+        }
+
+        /* Input area */
+        .input-area {
+            padding: 16px 24px;
+            background: #0f172a;
+            border-top: 1px solid #1e293b;
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: border-color 0.2s;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: #FFCD11;
+        }
+
+        #messageInput {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #e2e8f0;
+            font-size: 14px;
+            resize: none;
+            max-height: 120px;
+            font-family: inherit;
+        }
+
+        #messageInput::placeholder { color: #475569; }
+
+        .send-btn {
+            width: 44px;
+            height: 44px;
+            background: #FFCD11;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .send-btn:hover { background: #f59e0b; transform: scale(1.05); }
+        .send-btn:disabled { background: #334155; cursor: not-allowed; transform: none; }
+
+        .send-btn svg { width: 18px; height: 18px; }
+
+        .footer-note {
+            text-align: center;
+            font-size: 11px;
+            color: #334155;
+            margin-top: 8px;
+        }
+
+        /* Scrollbar */
+        .chat-container::-webkit-scrollbar { width: 4px; }
+        .chat-container::-webkit-scrollbar-track { background: transparent; }
+        .chat-container::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+    <div class="cat-badge">CAT</div>
+    <div>
+        <div class="header-title">MineStar AI Assistant</div>
+        <div class="header-sub">Fleet Intelligence · Equipment Diagnostics · Real-time Operations</div>
+    </div>
+    <div style="display:flex;align-items:center;margin-left:auto">
+        <div class="status-dot"></div>
+        <span class="status-text">System Online</span>
+    </div>
+</div>
+
+<!-- Chat -->
+<div class="chat-container" id="chatContainer">
+    <div class="welcome" id="welcome">
+        <h2>How can I help you today?</h2>
+        <p>Ask me about equipment status, fault diagnostics, or fleet operations</p>
+        <div class="quick-btns">
+            <button class="quick-btn" onclick="sendQuick('Give me a full fleet summary')">
+                📊 Fleet Summary
+            </button>
+            <button class="quick-btn" onclick="sendQuick('What is the status of truck CAT-793-007?')">
+                🚛 Truck Status
+            </button>
+            <button class="quick-btn" onclick="sendQuick('What causes engine overheating in CAT 793?')">
+                🔧 Engine Diagnostics
+            </button>
+            <button class="quick-btn" onclick="sendQuick('Check fuel level of CAT-793-008 and create ticket if needed')">
+                ⛽ Fuel Check
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Input -->
+<div class="input-area">
+    <div class="input-wrapper">
+        <textarea
+                id="messageInput"
+                rows="1"
+                placeholder="Ask about fleet status, equipment issues, maintenance..."
+                onkeydown="handleKey(event)"
+                oninput="autoResize(this)"
+        ></textarea>
+    </div>
+    <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M22 2L11 13M22 2L15 22L11 13L2 9L22 2Z"/>
+        </svg>
+    </button>
+</div>
+<div class="footer-note">MineStar Fleet AI · Powered by Spring AI · Learning Project</div>
+
+<script>
+    const chatContainer = document.getElementById('chatContainer');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    function autoResize(el) {
+        el.style.height = 'auto';
+        el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+    }
+
+    function handleKey(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    }
+
+    function sendQuick(msg) {
+        messageInput.value = msg;
+        sendMessage();
+    }
+
+    function formatText(text) {
+    return text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\n/g, '<br>');
+}
+
+    function addMessage(text, type) {
+        const welcome = document.getElementById('welcome');
+        if (welcome) welcome.remove();
+
+        const div = document.createElement('div');
+        div.className = `message ${type}`;
+
+        const avatar = document.createElement('div');
+        avatar.className = `avatar ${type === 'ai' ? 'ai' : 'user-av'}`;
+        avatar.textContent = type === 'ai' ? 'AI' : 'U';
+
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        bubble.innerHTML = formatText(text);
+
+        div.appendChild(avatar);
+        div.appendChild(bubble);
+        chatContainer.appendChild(div);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        return bubble;
+    }
+
+    function addTyping() {
+        const welcome = document.getElementById('welcome');
+        if (welcome) welcome.remove();
+
+        const div = document.createElement('div');
+        div.className = 'message ai';
+        div.id = 'typing';
+
+        const avatar = document.createElement('div');
+        avatar.className = 'avatar ai';
+        avatar.textContent = 'AI';
+
+        const typing = document.createElement('div');
+        typing.className = 'typing';
+        typing.innerHTML = '<span></span><span></span><span></span>';
+
+        div.appendChild(avatar);
+        div.appendChild(typing);
+        chatContainer.appendChild(div);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function removeTyping() {
+        const t = document.getElementById('typing');
+        if (t) t.remove();
+    }
+
+    function addSources(bubble, sources) {
+        if (!sources || sources.length === 0) return;
+        const sourcesDiv = document.createElement('div');
+        sourcesDiv.className = 'sources';
+        sourcesDiv.innerHTML = `<div class="sources-label">Knowledge Base Sources</div>`;
+        sources.forEach(s => {
+            const tag = document.createElement('span');
+            tag.className = 'source-tag';
+            tag.textContent = s;
+            sourcesDiv.appendChild(tag);
+        });
+        bubble.appendChild(sourcesDiv);
+    }
+
+    async function sendMessage() {
+        const message = messageInput.value.trim();
+        if (!message) return;
+
+        // Add user message
+        addMessage(message, 'user');
+        messageInput.value = '';
+        messageInput.style.height = 'auto';
+        sendBtn.disabled = true;
+
+        // Show typing
+        addTyping();
+
+        try {
+            const response = await fetch(
+                `/assistant/chat?question=${encodeURIComponent(message)}`
+            );
+            const data = await response.json();
+
+            removeTyping();
+
+            // Add AI response
+            const bubble = addMessage(data.answer || 'No response received.', 'ai');
+
+            // Add sources if available
+            if (data.source && data.source.length > 0) {
+                addSources(bubble, data.source);
+            }
+
+        } catch (error) {
+            removeTyping();
+            addMessage('Sorry, something went wrong. Please try again.', 'ai');
+            console.error('Error:', error);
+        } finally {
+            sendBtn.disabled = false;
+            messageInput.focus();
+        }
+    }
+</script>
+</body>
+</html>

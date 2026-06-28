@@ -68,8 +68,8 @@ public class MineStarAssistantService {
                           .collect(Collectors.joining("\n---\n"));
 
         List<String> source = vectorDoc.stream()
-                .map(d -> d.getMetadata().get("truckModel") + "|" +
-                        d.getMetadata().get("category") + "|" +
+                .map(d -> d.getMetadata().get("truckModel") + " · " +
+                        d.getMetadata().get("category") + " · " +
                         d.getMetadata().get("severity"))
                 .toList();
 
