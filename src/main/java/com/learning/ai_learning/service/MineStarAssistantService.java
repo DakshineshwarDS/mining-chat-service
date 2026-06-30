@@ -1,6 +1,7 @@
 package com.learning.ai_learning.service;
 
 import com.learning.ai_learning.model.AssistantResponse;
+import com.learning.ai_learning.model.LlmCallMetrics;
 import com.learning.ai_learning.tools.TruckDataService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,11 +21,16 @@ public class MineStarAssistantService {
     private final ChatClient chatClient;
     private final VectorStore vectorStore;
     private final TruckDataService truckDataService;
+    private final LlmObservabilityService observabilityService;
+    private final ObservabilityService dashboardStats;
 
     public MineStarAssistantService(ChatClient.Builder chatClient, VectorStore vectorStore,
-                                    TruckDataService truckDataService) {
+                                    TruckDataService truckDataService,LlmObservabilityService observabilityService,
+                                    ObservabilityService dashboardStats) {
         this.vectorStore =vectorStore;
         this.truckDataService = truckDataService;
+        this.observabilityService = observabilityService;
+        this.dashboardStats = dashboardStats;
         this.chatClient = chatClient.defaultSystem(
                 """
                         You are an intelligent AI assistant for Cat MineStar Fleet Management System.
@@ -53,6 +59,8 @@ public class MineStarAssistantService {
     public AssistantResponse chat(String question) {
 
         log.info("Assistant received: {}", question);
+        long startTime = System.currentTimeMillis();
+
         List<Document> vectorDoc = vectorStore.similaritySearch(
                 SearchRequest.builder()
                         .query(question)
@@ -86,6 +94,11 @@ public class MineStarAssistantService {
                         .param("question", question))
                 .call()
                 .content();
+
+        LlmCallMetrics metrics = observabilityService.recordCall(
+                "/assistant/chat", question, answer, startTime
+        );
+        dashboardStats.record(metrics);
 
         log.info("Assistant response generated");
         return new AssistantResponse(answer, source, question);
