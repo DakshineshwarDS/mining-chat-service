@@ -1,13 +1,7 @@
 package com.learning.ai_learning.controller;
 
-import com.learning.ai_learning.model.AssistantResponse;
-import com.learning.ai_learning.model.RagResponse;
-import com.learning.ai_learning.model.SearchResult;
-import com.learning.ai_learning.model.TruckAnalysis;
-import com.learning.ai_learning.service.FleetAssistantService;
-import com.learning.ai_learning.service.MineStarAssistantService;
-import com.learning.ai_learning.service.RagService;
-import com.learning.ai_learning.service.VectorService;
+import com.learning.ai_learning.model.*;
+import com.learning.ai_learning.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
@@ -29,14 +23,19 @@ public class AiController {
     private final RagService ragService;
     private final FleetAssistantService fleetAssistantService;
     private final MineStarAssistantService mineStarAssistantService;
+    private final LlmResilenceService llmResilenceService;
+    private final ObservabilityService observabilityService;
 
     public AiController(ChatClient.Builder chatClient, VectorService vectorService,
                         RagService ragService, FleetAssistantService fleetAssistantService,
-                        MineStarAssistantService mineStarAssistantService) {
+                        MineStarAssistantService mineStarAssistantService, LlmResilenceService llmResilenceService,
+                        ObservabilityService observabilityService) {
         this.vectorService =vectorService;
         this.ragService = ragService;
         this.fleetAssistantService = fleetAssistantService;
         this.mineStarAssistantService =mineStarAssistantService;
+        this.llmResilenceService = llmResilenceService;
+        this.observabilityService =observabilityService;
         this.chatClient = chatClient
                 .defaultSystem("""
                        You are an expert assistant for Cat MineStar Fleet Management System.
@@ -139,6 +138,19 @@ public class AiController {
     public AssistantResponse assistantChat(@RequestParam String question) {
         log.info("Assistant chat: {}", question);
         return mineStarAssistantService.chat(question);
+    }
+
+    // New endpoint
+    @GetMapping("/resilience/ask")
+    public String resilienceAsk(@RequestParam String question) {
+        log.info("Resilience endpoint called: {}", question);
+        return llmResilenceService.askWithResilence(question);
+    }
+
+    // Dashboard endpoint
+    @GetMapping("/dashboard/stats")
+    public DashboardStats getDashboardStats() {
+        return observabilityService.getDashboardStats();
     }
 
 }
